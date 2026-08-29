@@ -1,0 +1,47 @@
+{
+  "camera": {
+    "device_index": 0,
+    "warmup_ms": 300,
+    "frame_count": 3,
+    "frame_interval_ms": 75,
+    "resolution": {
+      "width": 1920,
+      "height": 1080
+    }
+  },
+  "regions": {
+    "primary": {
+      "comment": "Top code region, in fractions of image width/height: [x, y, w, h]",
+      "roi": [0.15, 0.08, 0.70, 0.18]
+    },
+    "secondary": {
+      "comment": "Second code occurrence, near 'SEND FUNDS USING CODE'",
+      "roi": [0.15, 0.55, 0.70, 0.18]
+    }
+  },
+  "ocr": {
+    "whitelist": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "code_length": 8,
+    "code_pattern": "^[A-Z]{8}$",
+    "psm_region": 7,
+    "psm_full_slip": 6,
+    "lang": "eng"
+  },
+  "preprocessing": {
+    "gaussian_blur_kernel": 3,
+    "resize_scale": 2.0
+  },
+  "paste": {
+    "auto_submit": false
+  },
+  "sounds": {
+    "enabled": true,
+    "success": "assets/success.wav",
+    "failure": "assets/failure.wav"
+  },
+  "logging": {
+    "mask_codes": false,
+    "log_dir": "logs",
+    "log_file": "scan_history.log"
+  }
+}

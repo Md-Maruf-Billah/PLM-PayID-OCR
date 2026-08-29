@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtual environment
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary images
+captures/
+debug/
+*.jpg
+*.jpeg
+*.png
+
+# Environment variables
+.env
+
+# Logs
+*.log
+logs/
+
+# Local settings
+config/local.json
