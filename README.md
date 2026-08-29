@@ -17,8 +17,13 @@ the cashier desk.
    currently focused field, with a success sound. On failure, a failure
    sound plays and the cashier is asked to scan again.
 
-See `docs/setup.md` for macOS installation, camera calibration, and the F8
-hotkey binding via Hammerspoon.
+**To install this on a cashier Mac:** see `docs/deployment.md` -- build a
+`.pkg` once, hand it to coworkers, they double-click to install and it walks
+them through calibration on first launch.
+
+For running from source during development (useful if you're iterating on
+the code, testing on your own Mac before packaging, or on Hammerspoon as an
+alternative to the bundled F8 listener), see `docs/setup.md`.
 
 ## Three-pass consensus
 
@@ -39,20 +44,25 @@ Codes must match `^[A-Z]{8}$`. The implementation lives in
 
 ```
 src/
-  main.py            entry point run by the F8 hotkey
-  camera.py           webcam capture (opens only for the duration of a scan)
-  image_processor.py  ROI cropping, grayscale/threshold preprocessing
-  ocr.py               pytesseract wrapper for the three passes
-  code_detector.py    pattern extraction + consensus algorithm
-  paste.py            clipboard copy + Cmd+V into the focused field
-  sounds.py            success/failure audio cue
-  scan_logger.py       scan history logging (no images, no banking data)
-  config.py            loads config/config.json (+ config/local.json)
+  app.py               packaged menu bar app: F8 listener + first-run calibration
+  main.py              single-shot scan, used by app.py and for dev/CLI testing
+  camera.py            webcam capture (opens only for the duration of a scan)
+  image_processor.py   ROI cropping, grayscale/threshold preprocessing
+  ocr.py                pytesseract wrapper for the three passes
+  code_detector.py     pattern extraction + consensus algorithm
+  calibration.py        interactive ROI picker, shared by the CLI script and app.py
+  hotkey.py             global F8 listener (pynput)
+  paste.py             clipboard copy + Cmd+V into the focused field
+  sounds.py             success/failure audio cue
+  scan_logger.py        scan history logging (no images, no banking data)
+  config.py             loads config/config.json + per-user local.json
+  runtime_paths.py      resolves paths for source vs. packaged .app
 
 config/config.json     camera, ROI, OCR, sound and logging defaults
-scripts/                camera_test.py, calibrate_camera.py
+scripts/                camera_test.py, calibrate_camera.py, build_app.sh, build_pkg.sh
+packaging/              PyInstaller spec + .pkg postinstall script
 tests/                   unit tests + an end-to-end OCR test on synthetic slips
-docs/                    setup.md, hammerspoon_init.lua
+docs/                    setup.md (dev), deployment.md (packaging/rollout), hammerspoon_init.lua
 ```
 
 ## Development

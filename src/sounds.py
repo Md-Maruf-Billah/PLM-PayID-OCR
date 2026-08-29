@@ -7,13 +7,12 @@ from __future__ import annotations
 
 import subprocess
 import sys
-from pathlib import Path
 
-from config import PROJECT_ROOT
+from runtime_paths import bundle_root
 
 
 def _play(path: str) -> None:
-    full_path = PROJECT_ROOT / path
+    full_path = bundle_root() / path
     if sys.platform == "darwin" and full_path.exists():
         subprocess.run(["afplay", str(full_path)], check=False)
     else:

@@ -1,0 +1,38 @@
+#!/bin/bash
+# Runs as root during .pkg install. Registers a LaunchAgent so the app
+# starts automatically at login instead of requiring the cashier to open
+# it manually every time they restart the Mac.
+set -e
+
+APP_PATH="/Applications/PlayLive PayID Scanner.app"
+PLIST_PATH="/Library/LaunchAgents/com.playlive.payidscanner.plist"
+CONSOLE_USER="$(stat -f%Su /dev/console)"
+
+cat > "$PLIST_PATH" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.playlive.payidscanner</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>${APP_PATH}/Contents/MacOS/PlayLive PayID Scanner</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <false/>
+</dict>
+</plist>
+PLIST
+
+chmod 644 "$PLIST_PATH"
+chown root:wheel "$PLIST_PATH"
+
+if [ -n "$CONSOLE_USER" ] && [ "$CONSOLE_USER" != "root" ]; then
+    CONSOLE_UID="$(id -u "$CONSOLE_USER")"
+    launchctl bootstrap "gui/${CONSOLE_UID}" "$PLIST_PATH" 2>/dev/null || true
+fi
+
+exit 0

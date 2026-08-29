@@ -1,0 +1,88 @@
+# Deployment: build once, install on every cashier Mac
+
+This turns the project into `PlayLive PayID Scanner.app` -- a menu bar app
+that listens for **F8** globally (no Hammerspoon needed), bundles Tesseract
+so coworkers don't need Homebrew, and walks them through camera calibration
+the first time it opens. It ships as a `.pkg` installer: double-click,
+click through, done.
+
+## 1. Build it (once, on your own Mac)
+
+```bash
+./scripts/build_app.sh
+./scripts/build_pkg.sh
+```
+
+This produces `dist/PlayLive PayID Scanner Installer.pkg`. That single file
+is what you hand to coworkers (AirDrop, USB stick, shared drive -- whatever
+is easiest).
+
+Both scripts must run on macOS; PyInstaller can't cross-build a `.app` from
+Linux or Windows.
+
+## 2. Install on a coworker's Mac
+
+1. Copy `PlayLive PayID Scanner Installer.pkg` onto their Mac.
+2. Double-click it.
+3. **This package is unsigned** (no Apple Developer ID / notarization), so
+   Gatekeeper will block it the first time with something like *"Apple
+   could not verify... malware"* or *"unidentified developer"*. To get past
+   it once: **Control-click the .pkg -> Open -> Open**, or go to
+   **System Settings -> Privacy & Security**, scroll down, and click
+   **Open Anyway** next to the blocked-app notice, then try opening it
+   again. This is only needed once per Mac, for the installer itself.
+4. Follow the installer -- it installs the app to `/Applications` and sets
+   it to start automatically at login.
+5. Open **PlayLive PayID Scanner** from Applications the first time (after
+   that, it starts on its own at login).
+
+## 3. First launch on their machine
+
+- macOS will prompt for **Camera** access -- allow it.
+- macOS will prompt for **Accessibility** access (needed for the F8 global
+  hotkey and pasting) -- allow it in System Settings if it isn't prompted
+  automatically.
+- A dialog walks them through calibration: place a test slip under the
+  camera, then drag a box over the primary code and the secondary code.
+  This is saved per-machine, so it only needs to happen once per station
+  (or again later if the camera gets moved/replaced -- see below).
+- After that, the app sits in the menu bar. F8 is live from any app: click
+  into the PlayLive code field, place a slip, press F8.
+
+## 4. Recalibrating later
+
+If the camera gets bumped, replaced, or moved to a new desk position, click
+the menu bar icon -> **Recalibrate**, and repeat the drag-a-box steps.
+
+## 5. Where things live on each machine
+
+- App: `/Applications/PlayLive PayID Scanner.app`
+- Calibration + scan logs: `~/Library/Application Support/PlayLive PayID Scanner/`
+- Auto-start: `/Library/LaunchAgents/com.playlive.payidscanner.plist`
+
+## 6. Updating to a new version
+
+Bump the version in `packaging/PlayLivePayIDScanner.spec` and
+`scripts/build_pkg.sh`, rebuild both scripts, and re-share the new `.pkg`.
+Reinstalling over an existing install just replaces the `.app` in place --
+calibration and logs (which live outside `/Applications`) are untouched.
+
+## 7. Uninstalling
+
+```bash
+launchctl bootout gui/$(id -u) /Library/LaunchAgents/com.playlive.payidscanner.plist
+sudo rm /Library/LaunchAgents/com.playlive.payidscanner.plist
+rm -rf "/Applications/PlayLive PayID Scanner.app"
+rm -rf ~/Library/Application\ Support/PlayLive\ PayID\ Scanner
+```
+
+## Why unsigned, and should you fix that?
+
+Signing + notarizing (so Gatekeeper never complains) requires an Apple
+Developer Program membership ($99/year) and running `xcrun notarytool`
+from a Mac with Xcode's command line tools during the build. For an
+internal tool used on a handful of machines you control, the one-time
+Control-click bypass per Mac is a reasonable tradeoff. If this ends up
+going to many more machines, or Gatekeeper's warning message becomes a
+support burden, that's worth revisiting -- ask and it can be added to the
+build script.

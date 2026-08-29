@@ -4,9 +4,20 @@ and whole slip.
 
 from __future__ import annotations
 
+import os
+
 import pytesseract
 
 from image_processor import Image, crop_roi, preprocess_for_ocr
+from runtime_paths import bundled_tessdata_dir, bundled_tesseract_cmd
+
+_bundled_cmd = bundled_tesseract_cmd()
+if _bundled_cmd:
+    pytesseract.pytesseract.tesseract_cmd = _bundled_cmd
+
+_bundled_tessdata = bundled_tessdata_dir()
+if _bundled_tessdata:
+    os.environ["TESSDATA_PREFIX"] = _bundled_tessdata
 
 
 def _tesseract_config(whitelist: str, psm: int) -> str:

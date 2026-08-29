@@ -1,8 +1,9 @@
 """Loads and exposes the project configuration.
 
-config/local.json (gitignored) overrides config/config.json when present,
-so machine-specific settings (camera index, ROI calibration) never need
-to touch the tracked defaults.
+A per-user local.json (see runtime_paths.user_data_dir) overrides
+config/config.json when present, so machine-specific settings (camera
+index, calibrated ROIs) never touch the tracked defaults -- and, once
+bundled into a read-only .app, have somewhere writable to live at all.
 """
 
 from __future__ import annotations
@@ -11,9 +12,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+from runtime_paths import bundle_root, user_data_dir
+
+PROJECT_ROOT = bundle_root()
 DEFAULT_CONFIG_PATH = PROJECT_ROOT / "config" / "config.json"
-LOCAL_CONFIG_PATH = PROJECT_ROOT / "config" / "local.json"
+LOCAL_CONFIG_PATH = user_data_dir() / "local.json"
 
 
 def _deep_merge(base: dict, override: dict) -> dict:

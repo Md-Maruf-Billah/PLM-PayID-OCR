@@ -5,9 +5,8 @@ resolved code (optionally masked) and the outcome, per docs/setup.md privacy not
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 
-from config import PROJECT_ROOT
+from runtime_paths import user_data_dir
 
 _logger = logging.getLogger("payid_ocr")
 
@@ -17,7 +16,10 @@ def _mask(code: str) -> str:
 
 
 def setup_logging(log_dir: str, log_file: str) -> logging.Logger:
-    directory = PROJECT_ROOT / log_dir
+    if _logger.handlers:
+        return _logger
+
+    directory = user_data_dir() / log_dir
     directory.mkdir(parents=True, exist_ok=True)
 
     handler = logging.FileHandler(directory / log_file)

@@ -5,7 +5,12 @@ __pycache__/
 
 # Virtual environment
 .venv/
+.venv-build/
 venv/
+
+# App packaging build output
+build/
+dist/
 
 # macOS
 .DS_Store
@@ -28,5 +33,6 @@ debug/
 *.log
 logs/
 
-# Local settings
+# Local settings (calibration now lives in ~/Library/Application Support/
+# PlayLive PayID Scanner/local.json -- this covers the old dev-only location)
 config/local.json
