@@ -6,19 +6,39 @@ so coworkers don't need Homebrew, and walks them through camera calibration
 the first time it opens. It ships as a `.pkg` installer: double-click,
 click through, done.
 
-## 1. Build it (once, on your own Mac)
+## 1. Build it (once)
 
+Both scripts must run on macOS -- PyInstaller can't cross-build a `.app`
+from Linux or Windows. Two ways to get that macOS build environment:
+
+**Option A -- GitHub Actions (no Mac needed, free):** the repo includes
+`.github/workflows/build-app.yml`, which builds on GitHub's free hosted
+macOS runners.
+1. On GitHub, open the repo -> **Actions** tab -> **Build macOS app** (left
+   sidebar) -> **Run workflow** button -> **Run workflow**.
+2. Wait for it to finish (a few minutes) -- it builds two versions, one for
+   Apple Silicon Macs and one for Intel Macs.
+3. Click into the finished run, scroll to **Artifacts**, and download
+   `PlayLive-PayID-Scanner-apple-silicon` or `PlayLive-PayID-Scanner-intel`
+   (whichever matches the cashier Mac -- not sure which? run `uname -m` in
+   Terminal on that Mac: `arm64` = Apple Silicon, `x86_64` = Intel; if in
+   doubt, download both and try the matching one). Each download is a
+   `.zip` containing the `.pkg` installer.
+
+This runs entirely on GitHub's infrastructure and costs nothing on the free
+tier (a build takes a few minutes, well under the free monthly minutes).
+
+**Option B -- on your own Mac:**
 ```bash
 ./scripts/build_app.sh
 ./scripts/build_pkg.sh
 ```
+Needs Xcode Command Line Tools + Homebrew set up locally first (see
+`docs/setup.md`).
 
-This produces `dist/PlayLive PayID Scanner Installer.pkg`. That single file
-is what you hand to coworkers (AirDrop, USB stick, shared drive -- whatever
-is easiest).
-
-Both scripts must run on macOS; PyInstaller can't cross-build a `.app` from
-Linux or Windows.
+Either way you end up with `PlayLive PayID Scanner Installer.pkg` -- that
+single file is what you hand to coworkers (AirDrop, USB stick, shared drive
+-- whatever is easiest).
 
 ## 2. Install on a coworker's Mac
 

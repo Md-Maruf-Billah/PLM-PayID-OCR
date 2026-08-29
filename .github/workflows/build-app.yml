@@ -1,0 +1,41 @@
+name: Build macOS app
+
+# Manual trigger only -- go to the Actions tab, pick "Build macOS app",
+# click "Run workflow". Builds on GitHub's free hosted macOS runners, so
+# no local Mac/Xcode/Homebrew setup is needed to produce the installer.
+# Builds for both Apple Silicon and Intel since either could be in use at
+# the cashier stations; download whichever matches (or try both -- macOS
+# will simply refuse to open the wrong one).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - runner: macos-14 # Apple Silicon (M-series)
+            arch: apple-silicon
+          - runner: macos-13 # Intel
+            arch: intel
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build app and installer
+        run: |
+          chmod +x scripts/build_app.sh scripts/build_pkg.sh
+          ./scripts/build_app.sh
+          ./scripts/build_pkg.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PlayLive-PayID-Scanner-${{ matrix.arch }}
+          path: dist/*.pkg
