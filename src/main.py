@@ -77,8 +77,15 @@ def scan() -> None:
         print("SCAN AGAIN")
         return
 
-    copy_to_clipboard(result.code)
-    paste_into_active_field(auto_submit=config["paste"]["auto_submit"])
+    try:
+        copy_to_clipboard(result.code)
+        paste_into_active_field(auto_submit=config["paste"]["auto_submit"])
+    except Exception as exc:
+        log_failure(f"PASTE_ERROR {exc}")
+        play_failure(config["sounds"]["failure"])
+        print(f"SCAN AGAIN (could not paste: {exc})")
+        return
+
     log_success(result.code, result.confidence.value, mask_codes=config["logging"]["mask_codes"])
     play_success(config["sounds"]["success"])
     print(result.code)

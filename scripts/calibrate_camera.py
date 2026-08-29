@@ -12,11 +12,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from calibration import local_config_path, run_calibration
+from calibration import CalibrationCancelled, local_config_path, run_calibration
 
 
 def main() -> None:
-    regions = run_calibration()
+    try:
+        regions = run_calibration()
+    except CalibrationCancelled:
+        print("Calibration cancelled.")
+        raise SystemExit(1)
+
     print(f"\nSaved to {local_config_path()}:")
     print(regions)
 

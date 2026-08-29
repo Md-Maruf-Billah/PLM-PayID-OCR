@@ -12,6 +12,7 @@ SRC = os.path.join(ROOT, "src")
 
 tesseract_bin = os.environ["TESSERACT_BIN"]
 tessdata_dir = os.environ["TESSDATA_DIR"]
+app_version = os.environ.get("APP_VERSION", "0.0.0")
 
 block_cipher = None
 
@@ -64,7 +65,7 @@ app = BUNDLE(  # noqa: F821
     info_plist={
         "LSUIElement": True,
         "NSCameraUsageDescription": "Scans PayID slips placed under the camera.",
-        "CFBundleShortVersionString": "1.0.0",
-        "CFBundleVersion": "1.0.0",
+        "CFBundleShortVersionString": app_version,
+        "CFBundleVersion": app_version,
     },
 )

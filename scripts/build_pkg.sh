@@ -16,6 +16,8 @@ if [[ ! -d "$APP" ]]; then
   exit 1
 fi
 
+VERSION="$(cat VERSION)"
+
 WORK_DIR="$(mktemp -d)"
 ROOT_DIR="$WORK_DIR/root"
 mkdir -p "$ROOT_DIR/Applications"
@@ -28,7 +30,7 @@ pkgbuild \
   --root "$ROOT_DIR" \
   --scripts packaging \
   --identifier com.playlive.payidscanner \
-  --version 1.0.0 \
+  --version "$VERSION" \
   --install-location / \
   "$OUT"
 

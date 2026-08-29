@@ -9,6 +9,7 @@ bundled into a read-only .app, have somewhere writable to live at all.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -37,8 +38,20 @@ def load_config(
         config = json.load(f)
 
     if local_path.exists():
-        with open(local_path, encoding="utf-8") as f:
-            config = _deep_merge(config, json.load(f))
+        try:
+            with open(local_path, encoding="utf-8") as f:
+                local_overrides = json.load(f)
+            if not isinstance(local_overrides, dict):
+                raise ValueError(f"expected a JSON object, got {type(local_overrides).__name__}")
+            config = _deep_merge(config, local_overrides)
+        except (json.JSONDecodeError, ValueError, OSError) as exc:
+            # A corrupted local.json (e.g. from a crash mid-write) must never take
+            # the whole app down on every launch -- fall back to defaults and let
+            # the user recalibrate from the menu to fix it.
+            print(
+                f"WARNING: ignoring corrupted {local_path} ({exc}); using default config.",
+                file=sys.stderr,
+            )
 
     return config
 

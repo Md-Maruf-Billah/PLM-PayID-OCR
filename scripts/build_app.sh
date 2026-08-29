@@ -23,6 +23,7 @@ fi
 TESS_PREFIX="$(brew --prefix tesseract)"
 export TESSERACT_BIN="$TESS_PREFIX/bin/tesseract"
 export TESSDATA_DIR="$TESS_PREFIX/share/tessdata"
+export APP_VERSION="$(cat VERSION)"
 
 if [[ ! -x "$TESSERACT_BIN" ]]; then
   echo "Could not find tesseract binary at $TESSERACT_BIN" >&2

@@ -49,6 +49,10 @@ Linux or Windows.
 - After that, the app sits in the menu bar. F8 is live from any app: click
   into the PlayLive code field, place a slip, press F8.
 
+Once it's working, print `docs/cashier-quick-start.md` and leave it at the
+register -- it's the one-page version of steps 4 onward, written for the
+cashier rather than for you.
+
 ## 4. Recalibrating later
 
 If the camera gets bumped, replaced, or moved to a new desk position, click
@@ -62,10 +66,14 @@ the menu bar icon -> **Recalibrate**, and repeat the drag-a-box steps.
 
 ## 6. Updating to a new version
 
-Bump the version in `packaging/PlayLivePayIDScanner.spec` and
-`scripts/build_pkg.sh`, rebuild both scripts, and re-share the new `.pkg`.
-Reinstalling over an existing install just replaces the `.app` in place --
-calibration and logs (which live outside `/Applications`) are untouched.
+Bump the version in the `VERSION` file, rebuild both scripts, and re-share
+the new `.pkg`. Reinstalling over an existing install just replaces the
+`.app` in place -- calibration and logs (which live outside
+`/Applications`) are untouched.
+
+After installing an update, quit the app from the menu bar and reopen it
+(or just restart the Mac) so it picks up the new build -- the LaunchAgent
+doesn't restart an already-running instance on its own.
 
 ## 7. Uninstalling
 

@@ -9,6 +9,8 @@ overrides the guessed defaults in config/config.json without touching them.
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 
 import cv2
 
@@ -17,6 +19,10 @@ from config import LOCAL_CONFIG_PATH, config
 from image_processor import select_sharpest
 
 _drag_state: dict = {}
+
+
+class CalibrationCancelled(Exception):
+    """Raised when the user presses Esc during region picking."""
 
 
 def local_config_path():
@@ -52,7 +58,7 @@ def _pick_region(window: str, frame) -> tuple[float, float, float, float]:
         if _drag_state.get("done") or key == 13:
             break
         if key == 27:
-            raise SystemExit("calibration cancelled")
+            raise CalibrationCancelled("calibration cancelled")
 
     x0, y0 = _drag_state["start"]
     x1, y1 = _drag_state["end"]
@@ -84,13 +90,14 @@ def run_calibration() -> dict:
     cv2.namedWindow(window)
     cv2.setMouseCallback(window, _on_mouse)
 
-    print("Drag a rectangle over the PRIMARY (top) code, then press Enter.")
-    primary_roi = _pick_region(window, frame)
+    try:
+        print("Drag a rectangle over the PRIMARY (top) code, then press Enter.")
+        primary_roi = _pick_region(window, frame)
 
-    print("Drag a rectangle over the SECONDARY code, then press Enter.")
-    secondary_roi = _pick_region(window, frame)
-
-    cv2.destroyAllWindows()
+        print("Drag a rectangle over the SECONDARY code, then press Enter.")
+        secondary_roi = _pick_region(window, frame)
+    finally:
+        cv2.destroyAllWindows()
 
     regions = {
         "primary": [round(v, 4) for v in primary_roi],
@@ -103,12 +110,25 @@ def run_calibration() -> dict:
 def save_regions(regions: dict) -> None:
     existing = {}
     if LOCAL_CONFIG_PATH.exists():
-        with open(LOCAL_CONFIG_PATH, encoding="utf-8") as f:
-            existing = json.load(f)
+        try:
+            with open(LOCAL_CONFIG_PATH, encoding="utf-8") as f:
+                loaded = json.load(f)
+            if isinstance(loaded, dict):
+                existing = loaded
+        except (json.JSONDecodeError, OSError):
+            pass  # corrupted -- overwrite it with a fresh file below
 
     existing.setdefault("regions", {})
     existing["regions"]["primary"] = {"roi": regions["primary"]}
     existing["regions"]["secondary"] = {"roi": regions["secondary"]}
 
-    with open(LOCAL_CONFIG_PATH, "w", encoding="utf-8") as f:
-        json.dump(existing, f, indent=2)
+    LOCAL_CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(dir=LOCAL_CONFIG_PATH.parent, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(existing, f, indent=2)
+        os.replace(tmp_path, LOCAL_CONFIG_PATH)
+    except BaseException:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+        raise
